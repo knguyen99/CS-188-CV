@@ -1,10 +1,12 @@
 from utils import *
 import argparse
 
+
 parser = argparse.ArgumentParser(description='CS188.2 - Fall 19 - Homework 1')
 parser.add_argument("--tiny", "-t", type=bool, default=True, help='run Tiny Images')
 parser.add_argument("--create-path", "-cp", type=bool, default=True, help='create the Results directory')
-parser.parse_args()
+args = parser.parse_args()
+
 
 # The argument is included as an idea for debugging, with a few examples in the main. Feel free to modify it or add arguments.
 # You are also welcome to disregard this entirely
@@ -27,7 +29,7 @@ if __name__ == "__main__":
             os.mkdir('Results') 
         SAVEPATH = 'Results/'
     
-    # Load data, the function is written for you in utils
+    # # Load data, the function is written for you in utils
     train_images, test_images, train_labels, test_labels = load_data()
     
     if args.tiny:
@@ -36,6 +38,7 @@ if __name__ == "__main__":
     
         # Split accuracies and runtimes for saving  
         for element in tinyRes[::2]:
+            
             # Check that every second element is an accuracy in reasonable bounds
             assert (7 < element and element < 20)
         acc = np.asarray(tinyRes[::2])
@@ -52,15 +55,16 @@ if __name__ == "__main__":
     # e.g vocab_idx[i] will tell you which algorithms/neighbors were used to compute vocabulary i
     # This isn't used in the rest of the code so you can feel free to ignore it
 
-    for feature in ['sift', 'surf', 'orb']:
+    for feature in [ 'sift','surf', 'orb']:
         for algo in ['kmeans', 'hierarchical']:
             for dict_size in [20, 50]:
+      #          print('buildDict ' + algo)
                 vocabulary = buildDict(train_images, dict_size, feature, algo)
                 filename = 'voc_' + feature + '_' + algo + '_' + str(dict_size) + '.npy'
                 np.save(SAVEPATH + filename, np.asarray(vocabulary))
                 vocabularies.append(vocabulary) # A list of vocabularies (which are 2D arrays)
                 vocab_idx.append(filename.split('.')[0]) # Save the map from index to vocabulary
-                
+    #print('finished buildDict')
     # Compute the Bow representation for the training and testing sets
     test_rep = [] # To store a set of BOW representations for the test images (given a vocabulary)
     train_rep = [] # To store a set of BOW representations for the train images (given a vocabulary)
@@ -78,39 +82,72 @@ if __name__ == "__main__":
             rep = computeBow(image, vocab, features[i])
             test_rep.append(rep)
         np.save(SAVEPATH + 'bow_test_' + str(i) + '.npy', np.asarray(test_rep)) # Save the representations for vocabulary i
-        train_rep = [] # reset the list to save the following vocabulary
-        
-    
+        test_rep = [] # reset the list to save the following vocabulary
+    # print('finished completeBow')
+
     # Use BOW features to classify the images with a KNN classifier
     # A list to store the accuracies and one for runtimes
     knn_accuracies = []
     knn_runtimes = []
 
+   
+    # for feature in [ 'sift','surf', 'orb']:
+    #     for algo in ['kmeans', 'hierarchical']:
+    #         for dict_size in [20, 50]:
+    #             vocabularies.append(np.load(SAVEPATH+'voc_'+feature+'_'+ algo + '_' + str(dict_size) + '.npy'))
     # Your code below, eg:
     # for i, vocab in enumerate(vocabularies):
     # ... 
+    for i, vocab in enumerate(vocabularies):
+        trainRep = np.load(SAVEPATH + 'bow_train_' + str(i) + '.npy')
+        testRep = np.load(SAVEPATH + 'bow_test_' + str(i) + '.npy')
+        start = timer()
+        prediction = KNN_classifier(trainRep,train_labels,testRep,9)
+        end = timer()
+        knn_accuracies.append(reportAccuracy(test_labels,prediction))
+        knn_runtimes.append(end-start)
+    #print(knn_accuracies)
+    # np.save(SAVEPATH+'knn_accuracies.npy', np.asarray(knn_accuracies)) # Save the accuracies in the Results/ directory
+    # np.save(SAVEPATH+'knn_runtimes.npy', np.asarray(knn_runtimes)) # Save the runtimes in the Results/ directory
     
-    np.save(SAVEPATH+'knn_accuracies.npy', np.asarray(knn_accuracies)) # Save the accuracies in the Results/ directory
-    np.save(SAVEPATH+'knn_runtimes.npy', np.asarray(knn_runtimes)) # Save the runtimes in the Results/ directory
-    
-    # Use BOW features to classify the images with 15 Linear SVM classifiers
+    # # Use BOW features to classify the images with 15 Linear SVM classifiers
     lin_accuracies = []
     lin_runtimes = []
     
+    for i, vocab in enumerate(vocabularies):
+        trainRep = np.load(SAVEPATH + 'bow_train_' + str(i) + '.npy')
+        testRep = np.load(SAVEPATH + 'bow_test_' + str(i) + '.npy')
+        start = timer()
+        prediction = SVM_classifier(trainRep,train_labels,testRep,True,10)
+        end = timer()
+        lin_accuracies.append(reportAccuracy(test_labels, prediction))
+        lin_runtimes.append(end-start)
+    #print(lin_accuracies)
     # Your code below
     #...
 
     np.save(SAVEPATH+'lin_accuracies.npy', np.asarray(lin_accuracies)) # Save the accuracies in the Results/ directory
     np.save(SAVEPATH+'lin_runtimes.npy', np.asarray(lin_runtimes)) # Save the runtimes in the Results/ directory
     
-    # Use BOW features to classify the images with 15 Kernel SVM classifiers
+    # # Use BOW features to classify the images with 15 Kernel SVM classifiers
     rbf_accuracies = []
     rbf_runtimes = []
     
     # Your code below
     # ...
     
+    for i, vocab in enumerate(vocabularies):
+        trainRep = np.load(SAVEPATH + 'bow_train_' + str(i) + '.npy')
+        testRep = np.load(SAVEPATH + 'bow_test_' + str(i) + '.npy')
+        start = timer()
+        prediction = SVM_classifier(trainRep,train_labels,testRep,False,1)
+        end = timer()
+        rbf_accuracies.append(reportAccuracy(test_labels, prediction))
+        rbf_runtimes.append(end-start)
+    #print(rbf_accuracies)
+
+
     np.save(SAVEPATH +'rbf_accuracies.npy', np.asarray(rbf_accuracies)) # Save the accuracies in the Results/ directory
     np.save(SAVEPATH +'rbf_runtimes.npy', np.asarray(rbf_runtimes)) # Save the runtimes in the Results/ directory
             
-    
+    # 
