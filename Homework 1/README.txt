@@ -1,5 +1,5 @@
-Elwyn Cruz,104977892,ElwynCruz@g.ucla.edu
-Khoi Nguyen,804993073,knguyen99@g.ucla.edu
+Elwyn Cruz,#########,ElwynCruz@g.ucla.edu
+Khoi Nguyen,#########,knguyen99@g.ucla.edu
 
 Sources:
 piazza
