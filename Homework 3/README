@@ -1,0 +1,10 @@
+Khoi Nguyen, #########, k.nguyen5464@gmail.com
+Elwyn Cruz, #########, elwyncruz@gmail.com
+
+Sources:
+https://keras.io/layers/convolutional/#conv2d
+https://keras.io/layers/normalization/#batchnormalization
+https://keras.io/layers/merge/#add
+https://keras.io/layers/pooling/#averagepooling2d
+https://keras.io/layers/pooling/#maxpooling2d
+https://keras.io/layers/convolutional/#zeropadding2d
